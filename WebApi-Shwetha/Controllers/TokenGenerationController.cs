@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace WebApi_Shwetha.Controllers
@@ -19,31 +20,19 @@ namespace WebApi_Shwetha.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel model)
         {
-            try
-            {
-                if (model.Username == "admin" && model.Password == "admin123")
-                {
-                    string token = GenerateJwtToken(model.Username, "Admin");
-                    return Ok(new { Token = token });
-                }
-                return Unauthorized("Invalid username or password");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Token generation failed: {ex.Message}");
-            }
-        }
+            if (string.IsNullOrEmpty(model.Username) || string.IsNullOrEmpty(model.Role))
+                return BadRequest("Username and Role are required");
 
-        private string GenerateJwtToken(string username, string role)
-        {
-            var key = Encoding.UTF8.GetBytes(SecretKey);
-            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var key =new SymmetricSecurityKey (Encoding.UTF8.GetBytes(SecretKey));
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, role),
-                new Claim("CustomClaim", "JwtFromController")
+                new Claim(ClaimTypes.Name, model.Username),
+                new Claim(ClaimTypes.Role, model.Role),
+                
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -52,14 +41,15 @@ namespace WebApi_Shwetha.Controllers
                 Expires = DateTime.UtcNow.AddHours(1),
                 Issuer = Issuer,
                 Audience = Audience,
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature
-                )
+                SigningCredentials = credentials
+                
             };
 
+            var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var jwtToken = tokenHandler.WriteToken(token);
+
+            return Ok(new { Token = jwtToken });
         }
     }
 
