@@ -17,17 +17,17 @@ namespace WebApi_Shwetha.Controllers
         private static readonly string Issuer = "https://localhost:7096";
         private static readonly string Audience = "https://localhost:7096";
 
+        
+
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginModel model)
         {
             if (string.IsNullOrEmpty(model.Username) || string.IsNullOrEmpty(model.Role))
                 return BadRequest("Username and Role are required");
 
-
             var key =new SymmetricSecurityKey (Encoding.UTF8.GetBytes(SecretKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             
-
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, model.Username),
@@ -42,16 +42,18 @@ namespace WebApi_Shwetha.Controllers
                 Issuer = Issuer,
                 Audience = Audience,
                 SigningCredentials = credentials
-                
             };
 
+            
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var jwtToken = tokenHandler.WriteToken(token);
 
             return Ok(new { Token = jwtToken });
         }
+
     }
 
-   
 }
+
+   
