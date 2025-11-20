@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using WebApi_Shwetha.Services_LifetimeDemo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,12 @@ builder.Services.AddDbContext<SwethaDbContext>(options =>
 // Add dependencies for DI
 builder.Services.AddScoped<EmployeeRepository>();
 builder.Services.AddScoped<EmployeeService>();
+
+// Register each with different lifetime
+builder.Services.AddTransient<TransientService>();
+builder.Services.AddScoped<ScopedService>();
+builder.Services.AddSingleton<SingletonService>();
+
 
 // Add services to the container.
 
