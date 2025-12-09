@@ -1,35 +1,19 @@
-﻿using BusinessLayer;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi_Shwetha.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    
     public class ConventionRoutingController : ControllerBase
     {
-        private readonly EmployeeService _employeeService;
-
-        public ConventionRoutingController(EmployeeService employeeService)
+        public IActionResult GetAll()
         {
-            _employeeService = employeeService;
+            return Ok(new string[] { "Alice", "Bob", "Charlie" });
         }
 
-        [HttpGet]
-       public IActionResult GetAll()
+        public IActionResult GetById(int id)
         {
-            var employees = _employeeService.GetAllEmployees();
-            return Ok(employees);
-        }
-
-        [HttpGet("{id}")]
-       public IActionResult GetById(int id)
-        {
-            var employee = _employeeService.GetEmployeeById(id);
-            if (employee == null)
-                return NotFound();
-            return Ok(employee);
+            return Ok($"Employee ID: {id}");
         }
     }
 }
-
